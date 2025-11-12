@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us | AutoCare Express{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<style>
+  :root {
+    --blue-deep: #002f6c;
+    --blue-primary: #0d47a1;
+    --blue-light: #64b5f6;
+    --blue-sky: #e3f2fd;
+    --white: #ffffff;
+  }
+
+  .about-hero {
+    background: linear-gradient(180deg, var(--blue-sky), var(--white));
+    text-align: center;
+    padding: 120px 0 160px;
+  }
+
+  .about-hero h1 {
+    font-weight: 800;
+    color: var(--blue-deep);
+  }
+
+  .about-hero p {
+    font-size: 1.1rem;
+    color: #333;
+    max-width: 800px;
+    margin: 10px auto;
+  }
+
+  .about-section {
+    background: #f9fbff;
+    padding: 80px 0;
+  }
+
+  .about-section h3 {
+    color: var(--blue-primary);
+    font-weight: 700;
+  }
+
+  .about-section p {
+    color: #333;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .values {
+    background: var(--blue-sky);
+    padding: 70px 0;
+  }
+
+  .value-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: 0.3s;
+  }
+
+  .value-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .value-card i {
+    font-size: 2rem;
+    color: var(--blue-primary);
+    margin-bottom: 10px;
+  }
+</style>
+
+<section class="about-hero" data-aos="fade-down">
+  <div class="container">
+    <h1>About AutoCare Express</h1>
+    <p>Driven by innovation, powered by passion — redefining the car wash experience with premium quality and precision.</p>
+  </div>
+</section>
+
+<section class="about-section" data-aos="fade-up">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4">
+        <img src="{% static 'images/carwash-illustration.png' %}" alt="Car Wash" class="img-fluid rounded-4 shadow-sm">
+      </div>
+      <div class="col-md-6">
+        <p>At <strong>AutoCare Express</strong>, we believe your vehicle deserves more than a simple wash — it deserves exceptional care. Our mission is to combine innovation, precision, and passion to deliver a car care experience that reflects true quality and attention to detail.</p>
+        <p> We use advanced cleaning technology, eco-friendly products, and certified professionals to ensure every vehicle receives the perfect balance of cleanliness, protection, and shine. Whether it’s a quick wash or a premium detailing service, our process is designed to enhance your car’s beauty while preserving its value..</p>
+        <p>Our goal is to make car care effortless, sustainable, and reliable, offering you complete peace of mind every time you visit. With AutoCare Express, your vehicle doesn’t just get cleaned — it gets the care it truly deserves.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="values" data-aos="fade-up">
+  <div class="container text-center">
+    <h3 class="mb-5 fw-bold">Our Core Values</h3>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="value-card">
+          <i class="bi bi-award"></i>
+          <h5 class="fw-bold">Excellence</h5>
+          <p>We deliver nothing less than perfection in every service.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="value-card">
+          <i class="bi bi-leaf"></i>
+          <h5 class="fw-bold">Sustainability</h5>
+          <p>Eco-conscious cleaning methods for a greener tomorrow.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="value-card">
+          <i class="bi bi-heart"></i>
+          <h5 class="fw-bold">Customer First</h5>
+          <p>Your satisfaction drives everything we do.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 1000, once: true });</script>
+{% endblock %}

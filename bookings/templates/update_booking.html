@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Update Booking Status | AutoCare Express{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+body {
+    background: linear-gradient(135deg, #f4f6fa, #ffffff);
+    font-family: 'Poppins', sans-serif;
+}
+
+.update-container {
+    max-width: 700px;
+    margin: 80px auto;
+    animation: fadeInUp 0.8s ease forwards;
+}
+
+.update-card {
+    background: linear-gradient(145deg, #ffffff, #f0f3f7);
+    border-radius: 25px;
+    box-shadow: 10px 10px 30px rgba(0,0,0,0.08), -10px -10px 30px rgba(255,255,255,0.9);
+    padding: 50px 45px;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.update-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 14px 14px 40px rgba(0,0,0,0.12), -14px -14px 40px rgba(255,255,255,0.95);
+}
+
+.update-title {
+    font-weight: 700;
+    text-align: center;
+    color: #0d47a1;
+    margin-bottom: 40px;
+    font-size: 2rem;
+}
+
+.booking-info p {
+    margin: 10px 0;
+    font-size: 0.95rem;
+    color: #555;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.form-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+select.form-control {
+    width: 100%;
+    border-radius: 14px;
+    padding: 14px 20px;
+    border: 1.5px solid #cfd8dc;
+    background: #fff;
+    appearance: none;
+    font-size: 1rem;
+    color: #333;
+    transition: all 0.3s ease;
+    box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+}
+
+select.form-control.pending {
+    border-color: #0d6efd;
+    box-shadow: 0 0 10px rgba(13, 110, 253, 0.2);
+}
+select.form-control.in_progress {
+    border-color: #ffc107;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.2);
+}
+select.form-control.completed {
+    border-color: #28a745;
+    box-shadow: 0 0 10px rgba(40, 167, 69, 0.2);
+}
+select.form-control.cancelled {
+    border-color: #dc3545;
+    box-shadow: 0 0 10px rgba(220, 53, 69, 0.2);
+}
+
+select.form-control:focus {
+    outline: none;
+    transform: scale(1.02);
+}
+
+.form-select-wrapper::after {
+    content: '\f282';
+    font-family: 'Bootstrap-icons';
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.2rem;
+    color: #1e88e5;
+}
+
+.btn-update-status {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    border: none;
+    border-radius: 50px;
+    padding: 14px 32px;
+    font-weight: 600;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(46,64,83,0.2);
+}
+.btn-update-status:hover {
+    background: linear-gradient(135deg, #0f2c54, #174a82);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 32px rgba(46,64,83,0.35);
+}
+
+.btn-back {
+    border-radius: 50px;
+    padding: 14px 32px;
+    background: #e0e5ec;
+    border: none;
+    color: #333;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn-back:hover {
+    background: #d1d5db;
+    color: #0d47a1;
+}
+
+.badge-status {
+    font-size: 0.9rem;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+.badge-pending { background-color: #0d6efd; color: #fff; }
+.badge-in-progress { background-color: #ffc107; color: #000; }
+.badge-completed { background-color: #28a745; color: #fff; }
+.badge-cancelled { background-color: #dc3545; color: #fff; }
+
+.alert {
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<div class="update-container">
+    <div class="update-card">
+        <h2 class="update-title">Update Booking Status</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" data-message="{{ message }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="booking-info mb-4">
+            <p><strong>Customer:</strong> {{ booking.customer.username }}</p>
+            <p><strong>Package:</strong> {{ booking.package.name }}</p>
+            <p><strong>Date:</strong> {{ booking.date|date:"M d, Y" }}</p>
+            <p><strong>Time:</strong> {{ booking.time|time:"g:i a" }}</p>
+            <p><strong>Address:</strong> {{ booking.address }}</p>
+            <p><strong>Contact:</strong> {{ booking.contact_number }}</p>
+            <p><strong>Current Status:</strong>
+                {% if booking.status == 'pending' %}
+                    <span class="badge-status badge-pending">{{ booking.get_status_display }}</span>
+                {% elif booking.status == 'in_progress' %}
+                    <span class="badge-status badge-in-progress">{{ booking.get_status_display }}</span>
+                {% elif booking.status == 'completed' %}
+                    <span class="badge-status badge-completed">{{ booking.get_status_display }}</span>
+                {% elif booking.status == 'cancelled' %}
+                    <span class="badge-status badge-cancelled">{{ booking.get_status_display }}</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <form method="POST" action="{% url 'bookings:update_booking_status' booking.id %}">
+            {% csrf_token %}
+            <div class="form-group mb-4">
+                <label for="status" class="fw-semibold mb-2">Change Status</label>
+                <div class="form-select-wrapper">
+                    <select name="status" id="status" class="form-control" required>
+                        {% for key, value in status_choices %}
+                            <option value="{{ key }}" {% if booking.status == key %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn-update-status">
+                    <i class="bi bi-pencil-square"></i> Update Status
+                </button>
+                <a href="{% url 'bookings:supervisor_dashboard' %}" class="btn-back">
+                    <i class="bi bi-arrow-left-circle"></i> Back
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(alert => {
+        const msg = alert.dataset.message;
+        if (msg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#f8fafc',
+                color: '#333',
+                iconColor: '#2a5298'
+            });
+        }
+    });
+
+    const select = document.getElementById('status');
+    function updateSelectColor() {
+        select.classList.remove('pending', 'in_progress', 'completed', 'cancelled');
+        const value = select.value;
+        select.classList.add(value);
+    }
+
+    updateSelectColor(); 
+    select.addEventListener('change', updateSelectColor);
+});
+</script>
+{% endblock %}

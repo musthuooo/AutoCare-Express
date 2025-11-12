@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% block title %}Login | AutoCare Express{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(160deg, #dbe9ff, #ffffff);
+  }
+
+  .login-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2.5rem 3rem;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    transition: all 0.3s ease;
+  }
+
+  .login-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .login-card h3 {
+    color: #002f6c;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  .form-control {
+    width: 100%;
+    border: 1px solid #c3cee6;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #222;
+    background-color: #f5f8ff;
+    transition: all 0.25s ease-in-out;
+  }
+
+  .form-control:focus {
+    border-color: #0d47a1;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.15);
+    outline: none;
+  }
+
+  .btn-primary {
+    background-color: #002f6c;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary:hover {
+    background-color: #0d47a1;
+    transform: translateY(-1px);
+  }
+
+  .signup-link a,
+  .forgot-link a {
+    color: #0d47a1;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .signup-link a:hover,
+  .forgot-link a:hover {
+    text-decoration: underline;
+  }
+
+  .forgot-link {
+    text-align: right;
+    margin-top: -5px;
+    margin-bottom: 10px;
+  }
+</style>
+
+<div class="container py-5">
+  <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-6 col-lg-5">
+      <div class="login-card">
+        <h3 class="text-center mb-4">Login</h3>
+
+        <form method="POST" novalidate>
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_username">Username</label>
+            <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="id_password">Password</label>
+            <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter your password" required>
+          </div>
+
+          <div class="forgot-link">
+            <a href="{% url 'password_reset' %}">Forgot Password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 mt-2">
+            <i class="bi bi-box-arrow-in-right"></i> Login
+          </button>
+        </form>
+
+        <div class="text-center mt-4 signup-link">
+          <p class="mb-0">
+            Don’t have an account?
+            <a href="{% url 'users:signup' %}">Sign up here</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

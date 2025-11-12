@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Our Packages | AutoCare Express{% endblock %}
+
+{% block content %}
+<style>
+body { 
+    background-color: #f4f6fa; 
+    font-family: 'Poppins', sans-serif;
+}
+
+.packages-wrapper {
+    max-width: 1200px; 
+    margin: 60px auto;
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; 
+    padding: 0 20px;
+}
+
+.package-card {
+    background: #ffffff;
+    border-radius: 18px; 
+    padding: 30px 25px;
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+}
+
+.package-card:hover {
+    transform: translateY(-3px);
+}
+
+.popular-ribbon {
+    position: absolute;
+    top: 15px; 
+    right: -45px;
+    background: #e91e63;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 5px 55px;
+    transform: rotate(45deg);
+}
+
+.package-card h3 {
+    font-weight: 700; 
+    color: #0d47a1;
+    margin-bottom: 12px; 
+    font-size: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.package-card p {
+    color: #6c757d; 
+    font-size: 0.95rem;
+    margin-bottom: 20px; 
+    flex-grow: 1;
+    line-height: 1.5;
+}
+
+.package-price {
+    font-weight: 700; 
+    color: #1e88e5;
+    font-size: 1.3rem; 
+    margin-bottom: 20px;
+}
+
+.btn-book {
+    background: linear-gradient(135deg, #0d47a1, #1e88e5);
+    border: none; 
+    border-radius: 50px; 
+    padding: 12px 25px;
+    font-weight: 600; 
+    color: #fff; 
+    text-align: center; 
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+.btn-book:hover {
+    background: linear-gradient(135deg, #08306b, #1565c0);
+    transform: translateY(-2px);
+}
+
+.packages-wrapper p {
+    grid-column: 1/-1;
+    text-align: center; 
+    color: #6c757d;
+    font-size: 1rem; 
+    margin-top: 40px;
+}
+
+@media (max-width: 576px) {
+    .package-card { padding: 25px 20px; }
+    .package-card h3 { font-size: 1.3rem; }
+    .package-price { font-size: 1.1rem; }
+    .popular-ribbon { padding: 5px 45px; right: -40px; font-size: 0.75rem; }
+}
+</style>
+
+<div class="packages-wrapper">
+    {% for package in packages %}
+    <div class="package-card">
+        {% if package.is_popular %}
+        <div class="popular-ribbon">Popular</div>
+        {% endif %}
+        <h3>{{ package.name }}</h3>
+        <p>{{ package.description }}</p>
+        <div class="package-price">₹ {{ package.price }}</div>
+        <a href="{% url 'bookings:create_booking' package.id %}" class="btn-book">Book Now</a>
+    </div>
+    {% empty %}
+    <p>No packages available at the moment.</p>
+    {% endfor %}
+</div>
+{% endblock %}

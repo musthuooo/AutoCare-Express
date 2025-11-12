@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Profile | AutoCare Express{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background: #f4f6fb;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-md-9">
+
+        <div class="card shadow-lg border-0 rounded-4 overflow-hidden position-relative">
+
+          <div class="text-center p-5 position-relative" style="background: linear-gradient(135deg, #0d47a1, #1e88e5); color: #fff;">
+            <h3 class="fw-bold mb-1">{{ user.first_name }} {{ user.last_name }}</h3>
+            <p class="mb-0 opacity-75">@{{ user.username }}</p>
+            <p class="small opacity-75 mt-1">Update your personal details below</p>
+          </div>
+
+          <div class="card-body p-4 p-md-5 bg-white">
+            <form method="POST" novalidate>
+              {% csrf_token %}
+
+              <h5 class="text-primary fw-bold mb-3 border-bottom pb-2">Personal Information</h5>
+
+              <div class="form-floating mb-3">
+                {{ user_form.first_name }}
+                <label for="id_first_name">First Name</label>
+                {% if user_form.first_name.errors %}
+                  <small class="text-danger">{{ user_form.first_name.errors }}</small>
+                {% endif %}
+              </div>
+
+              <div class="form-floating mb-3">
+                {{ user_form.last_name }}
+                <label for="id_last_name">Last Name</label>
+                {% if user_form.last_name.errors %}
+                  <small class="text-danger">{{ user_form.last_name.errors }}</small>
+                {% endif %}
+              </div>
+
+              <div class="form-floating mb-3">
+                {{ user_form.email }}
+                <label for="id_email">Email Address</label>
+                {% if user_form.email.errors %}
+                  <small class="text-danger">{{ user_form.email.errors }}</small>
+                {% endif %}
+              </div>
+
+              <div class="form-floating mb-4">
+                {{ user_form.username }}
+                <label for="id_username">Username</label>
+                {% if user_form.username.errors %}
+                  <small class="text-danger">{{ user_form.username.errors }}</small>
+                {% endif %}
+              </div>
+
+              <h5 class="text-primary fw-bold mb-3 border-bottom pb-2 mt-4">Contact Details</h5>
+
+              <div class="form-floating mb-3">
+                {{ profile_form.contact_number }}
+                <label for="id_contact_number">Contact Number</label>
+                {% if profile_form.contact_number.errors %}
+                  <small class="text-danger">{{ profile_form.contact_number.errors }}</small>
+                {% endif %}
+              </div>
+
+              <div class="form-floating mb-4">
+                {{ profile_form.address }}
+                <label for="id_address">Address</label>
+                {% if profile_form.address.errors %}
+                  <small class="text-danger">{{ profile_form.address.errors }}</small>
+                {% endif %}
+              </div>
+
+              <hr class="my-4">
+
+              <div class="d-flex justify-content-between align-items-center">
+                <a href="{% url 'users:profile' %}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
+                  <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary px-4 rounded-pill fw-semibold shadow-sm">
+                  <i class="bi bi-save2"></i> Save Changes
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.card {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar img {
+  transition: transform 0.4s ease;
+}
+.profile-avatar img:hover {
+  transform: scale(1.1);
+}
+
+.form-floating input,
+.form-floating textarea {
+  border-radius: 10px;
+  border: 1px solid #ced4da;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.form-floating input:focus,
+.form-floating textarea:focus {
+  border-color: #0d47a1;
+  box-shadow: 0 0 0 0.2rem rgba(13, 71, 161, 0.25);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0d47a1, #1e88e5);
+  border: none;
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #08306b, #1565c0);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+.btn-outline-secondary {
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+.btn-outline-secondary:hover {
+  background-color: #e3f2fd;
+  transform: translateY(-2px);
+}
+</style>
+{% endblock %}

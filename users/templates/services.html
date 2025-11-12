@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Services | AutoCare Express{% endblock %}
+
+{% block content %}
+<link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+<style>
+  :root {
+    --blue-deep: #002f6c;
+    --blue-primary: #0d47a1;
+    --blue-light: #64b5f6;
+    --blue-sky: #e3f2fd;
+    --white: #ffffff;
+    --gold: #ffca28;
+  }
+
+  .services-hero {
+    background: linear-gradient(180deg, var(--blue-sky), var(--white));
+    text-align: center;
+    padding: 120px 0 160px;
+  }
+
+  .services-hero h1 {
+    font-weight: 800;
+    color: var(--blue-deep);
+  }
+
+  .services-hero p {
+    font-size: 1.15rem;
+    opacity: 0.8;
+    color: #333;
+  }
+
+  .service-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px 30px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+    border-top: 4px solid var(--blue-primary);
+    transition: 0.3s;
+  }
+
+  .service-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--gold);
+  }
+
+  .service-card i {
+    font-size: 2.8rem;
+    color: var(--blue-primary);
+  }
+
+  .book-btn {
+    border-radius: 50px;
+    padding: 14px 40px;
+    font-weight: 600;
+    background: var(--blue-light);
+    color: var(--white);
+    border: none;
+    transition: 0.3s;
+  }
+
+  .book-btn:hover {
+    background: var(--blue-primary);
+    transform: translateY(-3px);
+  }
+</style>
+
+<section class="services-hero" data-aos="fade-down">
+  <div class="container">
+    <h1>Our Car Care Packages</h1>
+    <p>Tailored cleaning and detailing plans for every car enthusiast.</p>
+  </div>
+</section>
+
+<section class="py-5 bg-light">
+  <div class="container text-center">
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="fade-up">
+        <div class="service-card">
+          <i class="bi bi-droplet-half"></i>
+          <h4 class="mt-3">Quick & Standard Wash</h4>
+          <p>A convenient package for regular maintenance and fast cleaning. Perfect for keeping your car looking fresh without spending too much time. Exterior hand wash & quick dry Wheel and rim cleaning Interior vacuuming (seats, mats, carpets) Dashboard and console wipe.</p>
+          <h6 class="fw-bold text-primary mt-3">₹399</h6>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+        <div class="service-card">
+          <i class="bi bi-gem"></i>
+          <h4 class="mt-3">Premium Wash & Interior Detailing</h4>
+          <p>For those who want a thorough cleaning inside and out. Ideal for enhancing your car’s appearance and maintaining hygiene. Complete interior cleaning (seats, mats, carpets, dashboard) Stain and odor removal Exterior hand wash & wax finish Tire and rim shine.</p>
+          <h6 class="fw-bold text-primary mt-3">₹699</h6>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+        <div class="service-card">
+          <i class="bi bi-car-front-fill"></i>
+          <h4 class="mt-3">Full Body Detailing</h4>
+          <p>The ultimate package for long-term maintenance and special occasions. Offers full restoration and protection for your car. Deep interior cleaning (seats, mats, carpets, roof lining, dashboard) Exterior wash, polish, and paint protection Tire and wheel dressing Detailed attention to every corner of the car.</p>
+          <h6 class="fw-bold text-primary mt-3">₹1299</h6>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-5" data-aos="zoom-in">
+      <a href="{% url 'users:login' %}" class="book-btn btn-lg"><i class="bi bi-calendar-check"></i> Schedule Now</a>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 1000, once: true });</script>
+{% endblock %}

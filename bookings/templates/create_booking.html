@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book a Wash | AutoCare Express{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+<style>
+/* Clean, consistent UI to match the rest of the app */
+body {
+  background: linear-gradient(135deg, #f4f6fa, #ffffff);
+  font-family: 'Poppins', sans-serif;
+}
+
+.booking-wrapper {
+  max-width: 640px;
+  margin: 48px auto;
+  padding: 0 16px;
+}
+
+.booking-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 40px 36px;
+  box-shadow: 0 8px 30px rgba(13,71,161,0.06);
+}
+
+.booking-header { text-align:center; margin-bottom:28px; }
+.booking-header h2 {
+  color:#0d47a1; font-weight:700; font-size:1.8rem; margin-bottom:6px;
+}
+.booking-header p { color:#6c757d; font-size:0.95rem; margin:0; }
+
+/* fields */
+.form-label { font-weight:600; color:#222; margin-bottom:6px; display:block; }
+.form-control, select {
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1.5px solid #e9eef6;
+  background:#fbfdff;
+  transition: all .15s ease;
+  font-size:0.95rem;
+}
+.form-control:focus, select:focus { outline:none; box-shadow:0 6px 18px rgba(13,71,161,0.06); border-color:#0d47a1; }
+
+.slot-note {
+  color:#6c757d;
+  font-size:0.9rem;
+  margin-top:6px;
+}
+
+/* main button */
+.btn-submit {
+  background: linear-gradient(135deg,#0d47a1,#1e88e5);
+  color:#fff; border:none; border-radius:50px; padding:12px 20px; font-weight:700;
+  box-shadow: 0 6px 18px rgba(13,71,161,0.12);
+}
+.btn-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(13,71,161,0.14); }
+
+/* alerts & errors */
+.field-error { color:#d9534f; font-size:.88rem; margin-top:6px; }
+.alert { border-radius:10px; }
+
+/* responsive */
+@media (max-width:576px) {
+  .booking-card { padding:28px 18px; }
+  .booking-wrapper { margin:20px 12px; }
+}
+</style>
+
+<div class="booking-wrapper">
+  <div class="booking-card">
+    <div class="booking-header">
+      <h2>Book "{{ package.name }}"</h2>
+      <p>Price: ₹ {{ package.price }} — {{ package.description }}</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-3 text-center">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <form id="bookingForm" method="POST" novalidate>
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      {# Vehicle type & optional "Specify vehicle" #}
+      <div class="mb-3">
+        <label class="form-label" for="id_vehicle_type">Vehicle type</label>
+        {{ form.vehicle_type }}
+        {% if form.vehicle_type.help_text %}
+          <small class="slot-note">{{ form.vehicle_type.help_text }}</small>
+        {% endif %}
+        {% if form.vehicle_type.errors %}
+          <div class="field-error">{{ form.vehicle_type.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      <div class="mb-3" id="custom-vehicle-wrapper" style="display:none;">
+        <label class="form-label" for="id_custom_vehicle_type">Specify vehicle</label>
+        {{ form.custom_vehicle_type }}
+        {% if form.custom_vehicle_type.help_text %}
+          <small class="slot-note">{{ form.custom_vehicle_type.help_text }}</small>
+        {% endif %}
+        {% if form.custom_vehicle_type.errors %}
+          <div class="field-error">{{ form.custom_vehicle_type.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      {# Date picker (no automatic reload) #}
+      <div class="mb-3">
+        <label class="form-label" for="id_date">Date</label>
+        {{ form.date }}
+        <small class="slot-note">Choose the date for your service — available slots below are for the selected date.</small>
+        {% if form.date.errors %}
+          <div class="field-error">{{ form.date.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      {# Time slot (managed slots only) #}
+      <div class="mb-3">
+        <label class="form-label" for="id_time_slot">Available time slots</label>
+        {{ form.time_slot }}
+        <div id="no-slots-msg" class="slot-note" style="display:none;">
+          No managed time slots available for the selected date. Please choose a different date or contact support.
+        </div>
+        {% if form.time_slot.errors %}
+          <div class="field-error">{{ form.time_slot.errors|striptags }}</div>
+        {% endif %}
+      </div>
+
+      {# Address & contact (readonly) #}
+      <div class="mb-3">
+        <label class="form-label">Address</label>
+        <input type="text" class="form-control" value="{{ default_address }}" readonly>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Contact Number</label>
+        <input type="text" class="form-control" value="{{ default_contact }}" readonly>
+      </div>
+
+      <div class="mb-3">
+        <button type="submit" class="btn-submit w-100"> 
+          <i class="bi bi-calendar-check me-2"></i> Book Now
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Vehicle type -> show custom input when 'other' selected
+  const vehicleSelect = document.getElementById('id_vehicle_type');
+  const customWrapper = document.getElementById('custom-vehicle-wrapper');
+  const customInput = document.getElementById('id_custom_vehicle_type');
+
+  function updateCustomVisibility() {
+    if (!vehicleSelect || !customWrapper) return;
+    const isOther = vehicleSelect.value === 'other' || vehicleSelect.value === 'Other';
+    customWrapper.style.display = isOther ? 'block' : 'none';
+    if (!isOther && customInput) customInput.value = '';
+  }
+  updateCustomVisibility();
+  if (vehicleSelect) vehicleSelect.addEventListener('change', updateCustomVisibility);
+
+  // IMPORTANT: No auto-reload on date change. Server must provide correct time_slot choices on page load.
+  // If you later add AJAX endpoint, you can populate the time_slot options dynamically.
+
+  // If time_slot select has no non-empty options show friendly message
+  const slotSelect = document.getElementById('id_time_slot');
+  function checkSlots() {
+    if (!slotSelect) return;
+    const opts = Array.from(slotSelect.options).filter(o => o.value && o.value.trim() !== '');
+    const noSlotsMsg = document.getElementById('no-slots-msg');
+    if (opts.length === 0) {
+      if (noSlotsMsg) noSlotsMsg.style.display = 'block';
+    } else {
+      if (noSlotsMsg) noSlotsMsg.style.display = 'none';
+    }
+  }
+  checkSlots();
+
+  // Client-side validation: require time_slot before submit
+  const form = document.getElementById('bookingForm');
+  if (form) {
+    form.addEventListener('submit', function (ev) {
+      const chosenSlot = slotSelect ? slotSelect.value : '';
+      if (!chosenSlot || chosenSlot.trim() === '') {
+        ev.preventDefault();
+        // show inline alert
+        let alertEl = document.querySelector('.js-client-alert');
+        if (!alertEl) {
+          alertEl = document.createElement('div');
+          alertEl.className = 'alert alert-danger js-client-alert text-center mb-3';
+          alertEl.innerText = 'Please select an available time slot before booking.';
+          const card = document.querySelector('.booking-card');
+          card.insertBefore(alertEl, card.firstChild.nextSibling);
+          setTimeout(() => alertEl && alertEl.remove(), 5000);
+        }
+        if (slotSelect) slotSelect.focus();
+        return false;
+      }
+      // otherwise allow POST — server enforces capacity and final validation
+    });
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,361 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Bookings | AutoCare Express{% endblock %}
+
+{% block content %}
+<style>
+body {
+    background: linear-gradient(135deg, #f4f6f9, #e8ebf3);
+    font-family: 'Poppins', sans-serif;
+}
+
+.page-header {
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 15px; /* was 30px; tightened to fit tabs neatly */
+}
+.page-header h2 {
+    font-weight: 700;
+    color: #0d47a1;
+    letter-spacing: 1px;
+    font-size: 2rem;
+}
+.page-header p {
+    color: #6c757d;
+    font-size: 1rem;
+    margin-top: 5px;
+}
+
+/* NEW: tabs */
+.tab-links { display:inline-flex; gap:10px; justify-content:center; width:100%; margin: 10px 0 20px; }
+.tab-link {
+  display:inline-block; padding:8px 16px; border-radius:999px; text-decoration:none;
+  background:#e9eef7; color:#0d47a1; font-weight:600; border:1px solid #d8e1f0;
+}
+.tab-link:hover { background:#dbe6fb; }
+.tab-active { background:linear-gradient(135deg,#0d47a1,#1e88e5); color:#fff; border-color:transparent; }
+
+.booking-card {
+    border-radius: 20px;
+    padding: 25px 30px;
+    margin-bottom: 25px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.6s ease;
+    opacity: 0;
+    position: relative;
+}
+.booking-card.fade-in {
+    opacity: 1;
+}
+.booking-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.12);
+}
+
+.booking-card.pending { background-color: #fff8e1; }
+.booking-card.in_progress { background-color: #e3f2fd; }
+.booking-card.completed { background-color: #e8f5e9; }
+.booking-card.cancelled { background-color: #f8d7da; }
+
+.booking-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.booking-package {
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #0d47a1;
+}
+.booking-info span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.booking-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    padding: 6px 16px;
+    border-radius: 25px;
+    margin-top: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+.booking-status.pending { background-color: #ffeeba; color: #856404; }
+.booking-status.in_progress { background-color: #cce5ff; color: #004085; }
+.booking-status.completed { background-color: #d4edda; color: #155724; }
+.booking-status.cancelled { background-color: #f8d7da; color: #721c24; }
+
+.progress-bar-container {
+    position: relative;
+    height: 10px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+    margin-top: 15px;
+}
+.progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #0d47a1, #1e88e5);
+    width: 0%;
+    transition: width 1s ease-in-out;
+}
+.progress-bar-fill.pending { width: 30%; }
+.progress-bar-fill.in_progress { width: 60%; }
+.progress-bar-fill.completed { width: 100%; }
+.progress-bar-fill.cancelled { width: 0%; background: linear-gradient(90deg, #dc3545, #c82333); }
+
+.booking-extra {
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.btn-create {
+    background: linear-gradient(135deg, #0d47a1, #1e88e5);
+    border: none;
+    border-radius: 50px;
+    padding: 14px 36px;
+    font-weight: 600;
+    color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.3);
+}
+.btn-create:hover {
+    background: linear-gradient(135deg, #08306b, #1565c0);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(13, 71, 161, 0.35);
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 22px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 12px;
+    display: inline-block;
+    font-size: 0.95rem;
+    transition: all 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+    cursor: pointer;
+}
+.btn-cancel i { transition: transform 0.3s ease; }
+.btn-cancel:hover {
+    background: linear-gradient(135deg, #b21f2d, #9a1c23);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 18px rgba(220, 53, 69, 0.35);
+}
+.btn-cancel:hover i { transform: rotate(-10deg) scale(1.2); }
+
+/* archive button */
+.btn-archive {
+    background: linear-gradient(135deg, #0d47a1, #1e88e5);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 22px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: 12px;
+    display: inline-block;
+    font-size: 0.95rem;
+    transition: all 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(13, 71, 161, 0.25);
+    cursor: pointer;
+}
+.btn-archive:hover {
+    background: linear-gradient(135deg, #08306b, #1565c0);
+    transform: translateY(-2px) scale(1.03);
+}
+
+/* subtle style for archived cards in the Archived section */
+.booking-card.archived { background-color: #eef2f7; }
+
+.no-bookings {
+    padding: 70px 20px;
+    text-align: center;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    animation: fadeIn 0.6s ease-in-out;
+}
+.no-bookings img { width: 160px; opacity: 0.85; margin-bottom: 20px; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div class="container">
+    <div class="page-header">
+        <h2><i class="bi bi-calendar-check me-2"></i> My Bookings</h2>
+        <p>Manage all your car wash appointments efficiently.</p>
+    </div>
+
+    <!-- NEW: Tabs -->
+    <div class="tab-links">
+      <a href="#active" class="tab-link tab-active"><i class="bi bi-list-ul me-1"></i> Active</a>
+      <a href="#archived" class="tab-link"><i class="bi bi-archive me-1"></i> Archived</a>
+    </div>
+
+    {% if messages %}
+        <div class="mb-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} shadow-sm text-center">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div id="active">
+    {% if bookings %}
+        {% for booking in bookings|dictsortreversed:"date" %}
+        <div class="booking-card {{ booking.status|lower }}">
+            <div class="booking-details">
+                <span class="booking-package">{{ booking.package.name }}</span>
+                <div class="booking-info">
+                    <span><i class="bi bi-calendar3"></i> {{ booking.date|date:"M d, Y" }}</span>
+                    <span><i class="bi bi-clock"></i> {{ booking.time|time:"g:i a" }}</span>
+                    <span><i class="bi bi-geo-alt"></i> {{ booking.address }}</span>
+                </div>
+            </div>
+
+            <div class="booking-status {{ booking.status|lower }}">
+                {% if booking.status == 'pending' %}<i class="bi bi-hourglass-split"></i> Pending
+                {% elif booking.status == 'in_progress' %}<i class="bi bi-arrow-repeat"></i> In Progress
+                {% elif booking.status == 'completed' %}<i class="bi bi-check-circle"></i> Completed
+                {% elif booking.status == 'cancelled' %}<i class="bi bi-x-circle"></i> Cancelled
+                {% else %}<i class="bi bi-question-circle"></i> Unknown{% endif %}
+            </div>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill {{ booking.status|lower }}"></div>
+            </div>
+
+            {% if booking.supervisor_name or booking.duration or booking.notes %}
+            <div class="booking-extra">
+                {% if booking.supervisor_name %}<p><strong>Supervisor:</strong> {{ booking.supervisor_name }}</p>{% endif %}
+                {% if booking.duration %}<p><strong>Service Duration:</strong> {{ booking.duration }}</p>{% endif %}
+                {% if booking.notes %}<p><strong>Notes:</strong> {{ booking.notes }}</p>{% endif %}
+            </div>
+            {% endif %}
+
+            {% if booking.status == 'pending' %}
+            <form action="{% url 'bookings:cancel_booking' booking.id %}" method="post" style="display:inline-block;">
+                {% csrf_token %}
+                <button type="submit" class="btn-cancel" onclick="return confirm('Are you sure you want to cancel this booking?');">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Booking
+                </button>
+            </form>
+            {% endif %}
+
+            {% if booking.status == 'completed' or booking.status == 'cancelled' %}
+            <!-- Archive button for completed/cancelled -->
+            <form action="{% url 'bookings:archive_booking_user' booking.id %}" method="post" style="display:inline-block;" class="archive-form">
+                {% csrf_token %}
+                <button type="submit" class="btn-archive">
+                    <i class="bi bi-archive me-1"></i> Archive
+                </button>
+            </form>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+        <div class="text-center mt-5 mb-5">
+            <a href="{% url 'bookings:packages' %}" class="btn btn-create shadow-sm">
+                <i class="bi bi-calendar-plus me-2"></i> Create New Booking
+            </a>
+        </div>
+    {% else %}
+        <div class="no-bookings">
+            <h4 class="fw-semibold mb-2">No Bookings Yet</h4>
+            <p class="text-muted mb-4">You haven’t booked a wash yet. Start now and give your car the care it deserves!</p>
+            <a href="{% url 'bookings:packages' %}" class="btn btn-create">
+                <i class="bi bi-calendar-plus me-2"></i> Create Your First Booking
+            </a>
+        </div>
+    {% endif %}
+    </div>
+
+    <!-- Archived section -->
+    <section id="archived" class="mt-5 mb-4">
+      <h3 class="mb-3 fw-bold">Archived Bookings</h3>
+      {% if archived_bookings %}
+        {% for booking in archived_bookings|dictsortreversed:"date" %}
+          <div class="booking-card archived">
+            <div class="booking-details">
+              <span class="booking-package">{{ booking.package.name }}</span>
+              <div class="booking-info">
+                <span><i class="bi bi-calendar3"></i> {{ booking.date|date:"M d, Y" }}</span>
+                <span><i class="bi bi-clock"></i> {{ booking.time|time:"g:i a" }}</span>
+                <span><i class="bi bi-geo-alt"></i> {{ booking.address }}</span>
+              </div>
+            </div>
+            <div class="booking-status">
+              <i class="bi bi-archive"></i> Archived ({{ booking.get_status_display }})
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No archived bookings.</p>
+      {% endif %}
+    </section>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.booking-card');
+    cards.forEach((card, index) => {
+        setTimeout(() => {
+            card.classList.add('fade-in');
+        }, 150 * index);
+    });
+
+    document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+        const width = bar.classList.contains('pending') ? '30%' :
+                      bar.classList.contains('in_progress') ? '60%' :
+                      bar.classList.contains('completed') ? '100%' :
+                      bar.classList.contains('cancelled') ? '0%' : '0%';
+        setTimeout(() => { bar.style.width = width; }, 200);
+    });
+
+    // NEW: simple tab active state
+    const links = document.querySelectorAll('.tab-link');
+    links.forEach(link => {
+      link.addEventListener('click', () => {
+        links.forEach(a => a.classList.remove('tab-active'));
+        link.classList.add('tab-active');
+      });
+    });
+
+    // Existing delete SweetAlert handler kept for compatibility; no .btn-delete now.
+    document.querySelectorAll('.btn-delete').forEach(button => {
+        button.addEventListener('click', function() {
+            const form = this.closest('.delete-form');
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This booking will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}

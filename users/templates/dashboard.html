@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; text-align: center;">
+    <h2>Welcome, {{ user.username|title }}</h2>
+    <p>Your role: <strong>{{ user.get_role_display }}</strong></p>
+
+    {% if user.role == 'customer' %}
+        <a href="{% url 'bookings:my_bookings' %}">Go to My Bookings</a>
+    {% elif user.role == 'supervisor' %}
+        <a href="{% url 'bookings:supervisor_dashboard' %}">Go to Supervisor Dashboard</a>
+    {% elif user.role == 'admin' %}
+        <a href="{% url 'bookings:admin_dashboard' %}">Go to Admin Dashboard</a>
+    {% else %}
+        <p>No specific dashboard available.</p>
+    {% endif %}
+</div>
+{% endblock %}

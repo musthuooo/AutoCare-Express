@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up | AutoCare Express{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --blue-deep: #002f6c;
+    --blue-mid: #0d47a1;
+    --blue-light: #dbe9ff;
+    --white: #ffffff;
+  }
+
+  body {
+    background: linear-gradient(160deg, var(--blue-light), var(--white));
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .signup-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 15px;
+  }
+
+  .signup-card {
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    max-width: 420px;
+    width: 100%;
+    padding: 2.8rem 2.5rem;
+  }
+
+  .signup-card h3 {
+    text-align: center;
+    color: var(--blue-deep);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    color: #0a1a33;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"] {
+    width: 100%;
+    border: 1px solid #c3cee6;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 15px;
+    color: #222;
+    background-color: #f5f8ff;
+    transition: 0.25s ease;
+  }
+
+  input:focus {
+    border-color: var(--blue-mid);
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.15);
+    outline: none;
+  }
+
+  .btn-primary {
+    background-color: var(--blue-deep);
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    padding: 10px 0;
+    font-size: 1rem;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--blue-mid);
+    transform: translateY(-1px);
+  }
+
+  .login-link {
+    text-align: center;
+    margin-top: 1.2rem;
+    font-size: 0.95rem;
+  }
+
+  .login-link a {
+    color: var(--blue-mid);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+
+  .text-danger {
+    font-size: 0.9rem;
+  }
+</style>
+
+<div class="signup-wrapper">
+  <div class="signup-card">
+    <h3>Create Your Account</h3>
+
+    <form method="POST" novalidate id="signupForm">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+
+      {% for field in form %}
+        {% if field.name != "role" %}
+        <div class="mb-3">
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+          <div class="text-danger mt-1">{{ field.errors|striptags }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      {% endfor %}
+
+      <button type="submit" class="btn btn-primary w-100 mt-2">
+        <i class="bi bi-person-plus"></i> Sign Up
+      </button>
+    </form>
+
+    <div class="login-link">
+      <p class="mb-0">Already have an account? <a href="{% url 'users:login' %}">Login here</a></p>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const firstNameInput = document.querySelector("input[name='first_name']");
+    if (firstNameInput) {
+      firstNameInput.focus();
+    }
+  });
+</script>
+{% endblock %}

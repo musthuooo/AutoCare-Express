@@ -3,8 +3,10 @@
 {% block title %}Update Booking Status | AutoCare Express{% endblock %}
 
 {% block content %}
+<!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
+<!-- SweetAlert -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
@@ -13,12 +15,14 @@ body {
     font-family: 'Poppins', sans-serif;
 }
 
+/* ===== Container ===== */
 .update-container {
     max-width: 700px;
     margin: 80px auto;
     animation: fadeInUp 0.8s ease forwards;
 }
 
+/* ===== Card ===== */
 .update-card {
     background: linear-gradient(145deg, #ffffff, #f0f3f7);
     border-radius: 25px;
@@ -35,6 +39,7 @@ body {
     box-shadow: 14px 14px 40px rgba(0,0,0,0.12), -14px -14px 40px rgba(255,255,255,0.95);
 }
 
+/* ===== Title ===== */
 .update-title {
     font-weight: 700;
     text-align: center;
@@ -43,6 +48,7 @@ body {
     font-size: 2rem;
 }
 
+/* ===== Booking Info ===== */
 .booking-info p {
     margin: 10px 0;
     font-size: 0.95rem;
@@ -54,6 +60,7 @@ body {
     border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
+/* ===== Dropdown Wrapper ===== */
 .form-select-wrapper {
     position: relative;
     display: inline-block;
@@ -73,6 +80,7 @@ select.form-control {
     box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
 }
 
+/* Dropdown Colors Dynamically */
 select.form-control.pending {
     border-color: #0d6efd;
     box-shadow: 0 0 10px rgba(13, 110, 253, 0.2);
@@ -95,6 +103,7 @@ select.form-control:focus {
     transform: scale(1.02);
 }
 
+/* Dropdown arrow icon */
 .form-select-wrapper::after {
     content: '\f282';
     font-family: 'Bootstrap-icons';
@@ -107,6 +116,7 @@ select.form-control:focus {
     color: #1e88e5;
 }
 
+/* ===== Buttons ===== */
 .btn-update-status {
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     border: none;
@@ -145,6 +155,7 @@ select.form-control:focus {
     color: #0d47a1;
 }
 
+/* ===== Status Badges ===== */
 .badge-status {
     font-size: 0.9rem;
     padding: 6px 14px;
@@ -223,6 +234,7 @@ select.form-control:focus {
     </div>
 </div>
 
+<!-- ✅ SweetAlert & Dynamic Dropdown Color -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const alerts = document.querySelectorAll('.alert');
@@ -242,6 +254,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // Dynamic dropdown color
     const select = document.getElementById('status');
     function updateSelectColor() {
         select.classList.remove('pending', 'in_progress', 'completed', 'cancelled');
@@ -249,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function() {
         select.classList.add(value);
     }
 
-    updateSelectColor(); 
+    updateSelectColor(); // initial load
     select.addEventListener('change', updateSelectColor);
 });
 </script>

@@ -16,4 +16,7 @@ urlpatterns = [
 
     path('delete/<int:booking_id>/', views.delete_booking, name='delete_booking'),
     path('manage-slots/', views.manage_time_slots, name='manage_time_slots'),
+    path('announcement-manager/', views.announcement_manager, name='announcement_manager'),
+    path('announcements/<int:pk>/delete/', views.delete_announcement, name='delete_announcement'),
+    
 ]

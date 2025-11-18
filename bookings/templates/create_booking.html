@@ -6,67 +6,32 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 
 <style>
-/* Clean, consistent UI to match the rest of the app */
+/* Minimal / consistent styling for the booking card */
 body {
   background: linear-gradient(135deg, #f4f6fa, #ffffff);
   font-family: 'Poppins', sans-serif;
 }
+.booking-wrapper { max-width: 720px; margin: 36px auto; padding: 0 16px; }
+.booking-card { background: #fff; border-radius: 14px; padding: 32px; box-shadow: 0 8px 30px rgba(13,71,161,0.06); }
+.booking-header { text-align:center; margin-bottom:24px; }
+.booking-header h2 { color:#0d47a1; font-weight:700; margin:0 0 6px; }
+.booking-header p { color:#6c757d; margin:0; }
 
-.booking-wrapper {
-  max-width: 640px;
-  margin: 48px auto;
-  padding: 0 16px;
-}
-
-.booking-card {
-  background: #fff;
-  border-radius: 18px;
-  padding: 40px 36px;
-  box-shadow: 0 8px 30px rgba(13,71,161,0.06);
-}
-
-.booking-header { text-align:center; margin-bottom:28px; }
-.booking-header h2 {
-  color:#0d47a1; font-weight:700; font-size:1.8rem; margin-bottom:6px;
-}
-.booking-header p { color:#6c757d; font-size:0.95rem; margin:0; }
-
-/* fields */
 .form-label { font-weight:600; color:#222; margin-bottom:6px; display:block; }
-.form-control, select {
-  width:100%;
-  padding:12px 14px;
-  border-radius:10px;
-  border:1.5px solid #e9eef6;
-  background:#fbfdff;
-  transition: all .15s ease;
-  font-size:0.95rem;
+.form-control, select, .form-select {
+  width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid #e9eef6; background:#fbfdff;
+  transition: all .12s ease; font-size:0.95rem;
 }
-.form-control:focus, select:focus { outline:none; box-shadow:0 6px 18px rgba(13,71,161,0.06); border-color:#0d47a1; }
+.form-control:focus, .form-select:focus { outline:none; box-shadow:0 6px 18px rgba(13,71,161,0.06); border-color:#0d47a1; }
 
-.slot-note {
-  color:#6c757d;
-  font-size:0.9rem;
-  margin-top:6px;
-}
-
-/* main button */
-.btn-submit {
-  background: linear-gradient(135deg,#0d47a1,#1e88e5);
-  color:#fff; border:none; border-radius:50px; padding:12px 20px; font-weight:700;
-  box-shadow: 0 6px 18px rgba(13,71,161,0.12);
-}
-.btn-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(13,71,161,0.14); }
-
-/* alerts & errors */
+.slot-note { color:#6c757d; font-size:0.9rem; margin-top:6px; }
 .field-error { color:#d9534f; font-size:.88rem; margin-top:6px; }
-.alert { border-radius:10px; }
-
-/* responsive */
-@media (max-width:576px) {
-  .booking-card { padding:28px 18px; }
-  .booking-wrapper { margin:20px 12px; }
+.btn-submit {
+  background: linear-gradient(135deg,#0d47a1,#1e88e5); color:#fff; border:none; border-radius:50px; padding:12px 20px;
+  font-weight:700; box-shadow: 0 6px 18px rgba(13,71,161,0.12);
 }
+#slot-loader { display:none; margin-top:8px; color:#0d47a1; font-weight:600; }
+.small-muted { color:#6c757d; font-size:0.9rem; }
 </style>
 
 <div class="booking-wrapper">
@@ -76,139 +41,197 @@ body {
       <p>Price: ₹ {{ package.price }} — {{ package.description }}</p>
     </div>
 
+    {# Non-field errors and messages #}
     {% if messages %}
       {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} mb-3 text-center">
-          {{ message }}
-        </div>
+        <div class="alert alert-{{ message.tags }} mb-3 text-center">{{ message }}</div>
       {% endfor %}
+    {% endif %}
+
+    {% if form.non_field_errors %}
+      <div class="alert alert-danger mb-3">
+        {{ form.non_field_errors }}
+      </div>
     {% endif %}
 
     <form id="bookingForm" method="POST" novalidate>
       {% csrf_token %}
-      {{ form.non_field_errors }}
 
-      {# Vehicle type & optional "Specify vehicle" #}
+      <!-- Vehicle Type -->
       <div class="mb-3">
-        <label class="form-label" for="id_vehicle_type">Vehicle type</label>
+        <label class="form-label" for="{{ form.vehicle_type.id_for_label }}">Vehicle type</label>
         {{ form.vehicle_type }}
-        {% if form.vehicle_type.help_text %}
-          <small class="slot-note">{{ form.vehicle_type.help_text }}</small>
-        {% endif %}
-        {% if form.vehicle_type.errors %}
-          <div class="field-error">{{ form.vehicle_type.errors|striptags }}</div>
-        {% endif %}
+        {% if form.vehicle_type.help_text %}<small class="small-muted">{{ form.vehicle_type.help_text }}</small>{% endif %}
+        {% if form.vehicle_type.errors %}<div class="field-error">{{ form.vehicle_type.errors|striptags }}</div>{% endif %}
       </div>
 
+      <!-- Custom vehicle (hidden by default) -->
       <div class="mb-3" id="custom-vehicle-wrapper" style="display:none;">
-        <label class="form-label" for="id_custom_vehicle_type">Specify vehicle</label>
+        <label class="form-label" for="{{ form.custom_vehicle_type.id_for_label }}">Specify vehicle</label>
         {{ form.custom_vehicle_type }}
-        {% if form.custom_vehicle_type.help_text %}
-          <small class="slot-note">{{ form.custom_vehicle_type.help_text }}</small>
-        {% endif %}
-        {% if form.custom_vehicle_type.errors %}
-          <div class="field-error">{{ form.custom_vehicle_type.errors|striptags }}</div>
-        {% endif %}
+        {% if form.custom_vehicle_type.errors %}<div class="field-error">{{ form.custom_vehicle_type.errors|striptags }}</div>{% endif %}
       </div>
 
-      {# Date picker (no automatic reload) #}
+      <!-- Date -->
       <div class="mb-3">
-        <label class="form-label" for="id_date">Date</label>
+        <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
         {{ form.date }}
-        <small class="slot-note">Choose the date for your service — available slots below are for the selected date.</small>
-        {% if form.date.errors %}
-          <div class="field-error">{{ form.date.errors|striptags }}</div>
-        {% endif %}
+        <div class="small-muted">Available time slots update automatically when you change the date.</div>
+        {% if form.date.errors %}<div class="field-error">{{ form.date.errors|striptags }}</div>{% endif %}
+        <div id="slot-loader"><i class="bi bi-arrow-repeat me-1"></i> Updating slots…</div>
       </div>
 
-      {# Time slot (managed slots only) #}
+      <!-- Time Slot: render server-provided options if present, AJAX will refresh -->
       <div class="mb-3">
-        <label class="form-label" for="id_time_slot">Available time slots</label>
+        <label class="form-label" for="{{ form.time_slot.id_for_label }}">Available time slots</label>
+
+        {# Render Django's select so server-side options appear if form was built with queryset #}
         {{ form.time_slot }}
-        <div id="no-slots-msg" class="slot-note" style="display:none;">
-          No managed time slots available for the selected date. Please choose a different date or contact support.
-        </div>
-        {% if form.time_slot.errors %}
-          <div class="field-error">{{ form.time_slot.errors|striptags }}</div>
-        {% endif %}
+
+        {% if form.time_slot.errors %}<div class="field-error">{{ form.time_slot.errors|striptags }}</div>{% endif %}
+        <small id="no-slots-msg" class="slot-note" style="display:none;">No time slots available for this date.</small>
+        <small id="all-full-msg" class="slot-note" style="display:none; color:#d9534f;">All slots are full for this date.</small>
       </div>
 
-      {# Address & contact (readonly) #}
+      <!-- Address -->
       <div class="mb-3">
         <label class="form-label">Address</label>
         <input type="text" class="form-control" value="{{ default_address }}" readonly>
       </div>
 
+      <!-- Contact -->
       <div class="mb-3">
         <label class="form-label">Contact Number</label>
         <input type="text" class="form-control" value="{{ default_contact }}" readonly>
       </div>
 
-      <div class="mb-3">
-        <button type="submit" class="btn-submit w-100"> 
-          <i class="bi bi-calendar-check me-2"></i> Book Now
-        </button>
-      </div>
+      <button type="submit" class="btn-submit w-100">
+        <i class="bi bi-calendar-check me-2"></i> Book Now
+      </button>
     </form>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  // Vehicle type -> show custom input when 'other' selected
-  const vehicleSelect = document.getElementById('id_vehicle_type');
-  const customWrapper = document.getElementById('custom-vehicle-wrapper');
-  const customInput = document.getElementById('id_custom_vehicle_type');
-
-  function updateCustomVisibility() {
-    if (!vehicleSelect || !customWrapper) return;
-    const isOther = vehicleSelect.value === 'other' || vehicleSelect.value === 'Other';
-    customWrapper.style.display = isOther ? 'block' : 'none';
-    if (!isOther && customInput) customInput.value = '';
-  }
-  updateCustomVisibility();
-  if (vehicleSelect) vehicleSelect.addEventListener('change', updateCustomVisibility);
-
-  // IMPORTANT: No auto-reload on date change. Server must provide correct time_slot choices on page load.
-  // If you later add AJAX endpoint, you can populate the time_slot options dynamically.
-
-  // If time_slot select has no non-empty options show friendly message
-  const slotSelect = document.getElementById('id_time_slot');
-  function checkSlots() {
-    if (!slotSelect) return;
-    const opts = Array.from(slotSelect.options).filter(o => o.value && o.value.trim() !== '');
-    const noSlotsMsg = document.getElementById('no-slots-msg');
-    if (opts.length === 0) {
-      if (noSlotsMsg) noSlotsMsg.style.display = 'block';
+document.addEventListener("DOMContentLoaded", () => {
+  // IDs come from Django default widget ids (id_vehicle_type, id_custom_vehicle_type, id_date, id_time_slot)
+  const vehicleSelect = document.getElementById("id_vehicle_type");
+  const customWrapper = document.getElementById("custom-vehicle-wrapper");
+  const customInput = document.getElementById("id_custom_vehicle_type");
+  function toggleCustomVehicle() {
+    if (!vehicleSelect) return;
+    const val = (vehicleSelect.value || "").toString().trim().toLowerCase();
+    if (val === "other" || val === "other (please specify)") {
+      customWrapper.style.display = "block";
     } else {
-      if (noSlotsMsg) noSlotsMsg.style.display = 'none';
+      customWrapper.style.display = "none";
+      if (customInput) customInput.value = "";
     }
   }
-  checkSlots();
+  if (vehicleSelect) {
+    vehicleSelect.addEventListener("change", toggleCustomVehicle);
+    toggleCustomVehicle();
+  }
 
-  // Client-side validation: require time_slot before submit
-  const form = document.getElementById('bookingForm');
-  if (form) {
-    form.addEventListener('submit', function (ev) {
-      const chosenSlot = slotSelect ? slotSelect.value : '';
-      if (!chosenSlot || chosenSlot.trim() === '') {
-        ev.preventDefault();
-        // show inline alert
-        let alertEl = document.querySelector('.js-client-alert');
-        if (!alertEl) {
-          alertEl = document.createElement('div');
-          alertEl.className = 'alert alert-danger js-client-alert text-center mb-3';
-          alertEl.innerText = 'Please select an available time slot before booking.';
-          const card = document.querySelector('.booking-card');
-          card.insertBefore(alertEl, card.firstChild.nextSibling);
-          setTimeout(() => alertEl && alertEl.remove(), 5000);
+  // Slot loading
+  const dateInput = document.getElementById("id_date");
+  const slotSelect = document.getElementById("id_time_slot");
+  const noSlotsMsg = document.getElementById("no-slots-msg");
+  const allFullMsg = document.getElementById("all-full-msg");
+  const loader = document.getElementById("slot-loader");
+
+  // Normalize date to ISO yyyy-mm-dd
+  function toIsoDate(val) {
+    if (!val) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+    // mm/dd/yyyy
+    const mdy = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+    const m = val.match(mdy);
+    if (m) {
+      const mm = m[1].padStart(2,"0"), dd = m[2].padStart(2,"0"), yyyy = m[3];
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    // fallback to Date parse
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) {
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,"0");
+      const dd = String(d.getDate()).padStart(2,"0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    return val;
+  }
+
+  async function loadSlots() {
+    if (!dateInput || !slotSelect) return;
+    const iso = toIsoDate(dateInput.value);
+    if (!iso) return;
+
+    loader.style.display = "block";
+    noSlotsMsg.style.display = "none";
+    allFullMsg.style.display = "none";
+
+    // Keep existing server-rendered options until we have fresh data
+    // Clear only when we append new options
+    try {
+      const res = await fetch(`/bookings/get-slots/?date=${encodeURIComponent(iso)}`, { credentials: 'same-origin' });
+      const data = await res.json();
+      loader.style.display = "none";
+
+      // clear existing options
+      slotSelect.innerHTML = "";
+
+      if (!data.slots || !Array.isArray(data.slots) || data.slots.length === 0) {
+        noSlotsMsg.style.display = "block";
+        return;
+      }
+
+      let anyAvailable = false;
+      data.slots.forEach(slot => {
+        const opt = document.createElement("option");
+        opt.value = slot.id;
+        opt.textContent = `${slot.start} - ${slot.end}`;
+        if (!slot.available) {
+          opt.disabled = true;
+          opt.textContent += " (Full)";
+        } else {
+          anyAvailable = true;
         }
-        if (slotSelect) slotSelect.focus();
+        // for debugging you can show counts:
+        // opt.textContent += ` — ${slot.booked_count}/${slot.capacity}`;
+        slotSelect.appendChild(opt);
+      });
+
+      if (!anyAvailable) {
+        allFullMsg.style.display = "block";
+      }
+    } catch (err) {
+      loader.style.display = "none";
+      // keep whatever server-side options were present (if any), but display a friendly message
+      noSlotsMsg.style.display = "block";
+      console.error("Failed to load slots:", err);
+    }
+  }
+
+  // initial load (if date has value)
+  loadSlots();
+  if (dateInput) dateInput.addEventListener("change", loadSlots);
+
+  // small client-side form guard to prevent empty slot submission
+  const form = document.getElementById("bookingForm");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      if (slotSelect && (!slotSelect.value || slotSelect.value.trim() === "")) {
+        e.preventDefault();
+        // show inline error
+        noSlotsMsg.style.display = "block";
+        noSlotsMsg.textContent = "Please select an available time slot before booking.";
+        slotSelect.focus();
         return false;
       }
-      // otherwise allow POST — server enforces capacity and final validation
     });
   }
 });
 </script>
+
 {% endblock %}

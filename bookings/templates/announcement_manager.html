@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* Clean, modern announcement manager UI */
+.announcement-top { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:1rem; }
+.announcement-manager-wrap { display:grid; grid-template-columns: 1fr 380px; gap:24px; align-items:start; }
+@media (max-width: 980px){ .announcement-manager-wrap { grid-template-columns: 1fr; } }
+
+.create-card { border-radius:12px; box-shadow:0 8px 30px rgba(12,37,75,0.06); overflow:hidden; }
+.create-card .card-header { background: linear-gradient(90deg,#0d6efd,#00a3ff); color:#fff; font-weight:600; }
+.preview-box { border-radius:10px; padding:18px; background:linear-gradient(180deg,#fff,#f7fbff); border:1px solid rgba(13,110,253,0.06); min-height:160px; }
+.announcement-card { border-left:6px solid #0d6efd; border-radius:10px; padding:14px; margin-bottom:12px; transition: transform .12s ease, box-shadow .12s ease; background:#fff; }
+.announcement-card:hover { transform:translateY(-3px); box-shadow:0 10px 30px rgba(10,25,60,0.06); }
+.badge-important{background:#dc3545;color:#fff;padding:6px 8px;border-radius:6px;font-weight:600;}
+.badge-warning{background:#ff9f1a;color:#000;padding:6px 8px;border-radius:6px;font-weight:600;}
+.badge-info{background:#0d6efd;color:#fff;padding:6px 8px;border-radius:6px;font-weight:600;}
+.expired{opacity:.55;filter:grayscale(.15);}
+.row-actions{display:flex;gap:8px;align-items:center;}
+.muted-small{color:#6c757d;font-size:.9rem;}
+.small-note{font-size:.85rem;color:#6b7280;margin-top:8px;}
+.announce-search{width:100%;max-width:340px;}
+</style>
+
+<div class="container mt-4">
+  <div class="announcement-top">
+    <div>
+      <h2 class="mb-0"><i class="fa-solid fa-bullhorn me-2 text-primary"></i> Announcement Manager</h2>
+      <p class="muted-small mb-0">Create, preview and manage site-wide messages (closures, urgent updates).</p>
+    </div>
+
+    <div style="display:flex; gap:8px; align-items:center;">
+      <a href="{% url 'bookings:supervisor_dashboard' %}" class="btn btn-outline-primary">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+      </a>
+      <a href="{% url 'users:dashboard' %}" class="btn btn-outline-secondary">
+        <i class="fa-solid fa-user me-1"></i> My Profile
+      </a>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="mb-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="announcement-manager-wrap">
+    <div>
+      <div class="card create-card mb-4">
+        <div class="card-header p-3 d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Create / Update Announcement</strong>
+            <div class="small-note">Announcement will auto-hide after its expiry date.</div>
+          </div>
+          <div class="text-end">
+            {% if form.instance.pk %}<small class="muted-small">Editing #{{ form.instance.pk }}</small>{% endif %}
+          </div>
+        </div>
+
+        <div class="card-body p-3">
+          <form method="POST" id="announcement-form" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label class="form-label">Title <small class="text-muted">(short)</small></label>
+              {{ form.title }}
+              {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">Message</label>
+              {{ form.message }}
+              <div class="small text-muted mt-1" id="msg-count">0 / 1000</div>
+              {% if form.message.errors %}<div class="text-danger small mt-1">{{ form.message.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col">
+                <label class="form-label">Type</label>
+                {{ form.type }}
+                {% if form.type.errors %}<div class="text-danger small mt-1">{{ form.type.errors|join:", " }}</div>{% endif %}
+              </div>
+              <div class="col">
+                <label class="form-label">Expiry</label>
+                {{ form.expiry }}
+                {% if form.expiry.errors %}<div class="text-danger small mt-1">{{ form.expiry.errors|join:", " }}</div>{% endif %}
+              </div>
+            </div>
+
+            <div class="form-check mb-3">
+              {{ form.is_active }} <label class="form-check-label" for="id_is_active">Active</label>
+              {% if form.is_active.errors %}<div class="text-danger small mt-1">{{ form.is_active.errors|join:", " }}</div>{% endif %}
+            </div>
+
+            <div class="d-flex gap-2">
+              <button type="submit" class="btn btn-primary" id="submit-btn">
+                <i class="fa-solid fa-save me-1"></i> Save Announcement
+              </button>
+              <a href="{% url 'bookings:announcement_manager' %}" class="btn btn-outline-secondary">Reset</a>
+              <button type="button" class="btn btn-outline-info" id="preview-copy">
+                <i class="fa-solid fa-copy me-1"></i> Copy Preview
+              </button>
+            </div>
+
+            <div id="form-feedback" class="mt-3"></div>
+          </form>
+        </div>
+      </div>
+
+      <div class="mb-3 d-flex justify-content-between align-items-center">
+        <h5 class="m-0">Active Announcements</h5>
+        <div class="d-flex gap-2 align-items-center">
+          <input id="search" class="form-control announce-search" placeholder="Search title / message" />
+          <select id="filter-type" class="form-select" style="width:160px;">
+            <option value="">All types</option>
+            <option value="important">Important</option>
+            <option value="warning">Warning</option>
+            <option value="info">Info</option>
+          </select>
+        </div>
+      </div>
+
+      {% with announcements_list=recent_announcements|default:announcements %}
+        {% if announcements_list %}
+          <div id="announcements-container">
+            {% for a in announcements_list %}
+              <div class="announcement-card {% if a.is_expired %}expired{% endif %}"
+                   data-title="{{ a.title|default_if_none:''|lower }}"
+                   data-type="{{ a.type|default_if_none:'' }}"
+                   data-message="{{ a.message|default_if_none:''|lower }}">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <h5 class="mb-1">
+                      {{ a.title|default:"(no title)" }}
+                      {% if a.type == "important" %}
+                        <span class="badge-important ms-2">Important</span>
+                      {% elif a.type == "warning" %}
+                        <span class="badge-warning ms-2">Warning</span>
+                      {% else %}
+                        <span class="badge-info ms-2">Info</span>
+                      {% endif %}
+                    </h5>
+                    <div class="muted-small">{{ a.message|linebreaksbr }}</div>
+                  </div>
+
+                  <div class="row-actions text-end">
+                    <div class="muted-small text-nowrap me-2">
+                      <div>Created: <strong>{{ a.created_at|date:"M d, Y" }}</strong></div>
+                      <div>Expires: <strong>{% if a.expiry %}{{ a.expiry|date:"M d, Y" }}{% else %}—{% endif %}</strong></div>
+                      <div class="mt-1">{% if a.is_expired %}<span class="badge bg-secondary">Expired</span>{% else %}<span class="badge bg-success">Active</span>{% endif %}</div>
+                    </div>
+
+                    <div>
+                      <form method="post" action="{% url 'bookings:delete_announcement' a.id %}" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this announcement?');" title="Delete">
+                          <i class="fa-solid fa-trash"></i>
+                        </button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted">No announcements found.</p>
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    <aside>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="mb-2">Live Preview</h6>
+          <div id="live-preview" class="preview-box">
+            <h5 id="pv-title">No announcement selected</h5>
+            <p id="pv-message" class="muted-small">Use the form to craft your message — the live preview updates as you type.</p>
+            <div class="small-note mt-3"><span id="pv-meta">Expires: —</span></div>
+          </div>
+
+          <div class="mt-3 small text-muted">
+            <strong>Quick tips:</strong>
+            <ul class="mb-0">
+              <li>Keep the title short (one line).</li>
+              <li>Expiry must be today or later to show immediately.</li>
+              <li>Important messages display in red and grab attention.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-2">Actions</h6>
+          <button id="show-active" class="btn btn-outline-primary w-100 mb-2">Show only Active</button>
+          <button id="show-all" class="btn btn-outline-secondary w-100">Show All</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+  const qs = sel => document.querySelector(sel);
+  const qsa = sel => Array.from(document.querySelectorAll(sel));
+
+  const titleEl = qs('#id_title') || qs('input[name="title"]');
+  const msgEl = qs('#id_message') || qs('textarea[name="message"]');
+  const typeEl = qs('#id_type') || qs('select[name="type"]');
+  const expiryEl = qs('#id_expiry') || qs('input[name="expiry"]');
+  const pvTitle = qs('#pv-title');
+  const pvMessage = qs('#pv-message');
+  const pvMeta = qs('#pv-meta');
+  const msgCount = qs('#msg-count');
+  const form = qs('#announcement-form');
+  const submitBtn = qs('#submit-btn');
+  const clearBtn = qs('#clear-btn');
+  const previewCopy = qs('#preview-copy');
+  const search = qs('#search');
+  const filterType = qs('#filter-type');
+
+  function updatePreview(){
+    const t = (titleEl && titleEl.value.trim()) || 'No title yet';
+    const m = (msgEl && msgEl.value.trim()) || 'Message preview...';
+    const e = expiryEl && expiryEl.value ? new Date(expiryEl.value) : null;
+    pvTitle.textContent = t;
+    pvMessage.textContent = m;
+    pvMeta.textContent = e ? ('Expires: ' + e.toLocaleDateString()) : 'Expires: —';
+    if(msgCount) msgCount.textContent = (msgEl ? msgEl.value.length : 0) + ' / 1000';
+  }
+
+  function expiryValid(){
+    if(!expiryEl || !expiryEl.value) return false;
+    const now = new Date(); now.setHours(0,0,0,0);
+    const e = new Date(expiryEl.value);
+    return e >= now;
+  }
+
+  if(titleEl) titleEl.addEventListener('input', updatePreview);
+  if(msgEl) msgEl.addEventListener('input', updatePreview);
+  if(typeEl) typeEl.addEventListener('change', updatePreview);
+  if(expiryEl) expiryEl.addEventListener('change', updatePreview);
+
+  qs('#preview-copy')?.addEventListener('click', async () => {
+    const text = pvTitle.textContent + '\\n\\n' + pvMessage.textContent + '\\n\\n' + pvMeta.textContent;
+    try { await navigator.clipboard.writeText(text); alert('Preview copied to clipboard'); }
+    catch(e){ alert('Copy failed — select and copy manually.'); }
+  });
+
+  form?.addEventListener('submit', function(e){
+    const msg = msgEl && msgEl.value.trim();
+    if(!msg){
+      e.preventDefault(); alert('Please add a message before saving.'); return;
+    }
+    if(!expiryEl || !expiryEl.value){ e.preventDefault(); alert('Please choose an expiry date.'); expiryEl?.focus(); return; }
+    if(!expiryValid()){ e.preventDefault(); alert('Expiry must be today or a future date.'); expiryEl?.focus(); return; }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Saving...';
+  });
+
+  (search || {}).addEventListener && search.addEventListener('input', refreshFilters);
+  (filterType || {}).addEventListener && filterType.addEventListener('change', refreshFilters);
+
+  function refreshFilters(){
+    const q = (search.value || '').toLowerCase();
+    const t = filterType.value;
+    const cards = qsa('.announcement-card');
+    cards.forEach(card => {
+      const title = (card.dataset.title || '').toLowerCase();
+      const msg = (card.dataset.message || '').toLowerCase();
+      const type = (card.dataset.type || '');
+      const matchesQ = !q || title.includes(q) || msg.includes(q);
+      const matchesT = !t || t === type;
+      card.style.display = (matchesQ && matchesT) ? '' : 'none';
+    });
+  }
+
+  qs('#show-active')?.addEventListener('click', () => { qsa('.announcement-card').forEach(c => c.classList.contains('expired') ? c.style.display='none': c.style.display=''); });
+  qs('#show-all')?.addEventListener('click', () => { qsa('.announcement-card').forEach(c => c.style.display=''); });
+
+  // initial preview
+  updatePreview();
+})();
+</script>
+
+{% endblock %}

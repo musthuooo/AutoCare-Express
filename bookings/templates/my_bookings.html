@@ -26,6 +26,53 @@ body {
     margin-top: 5px;
 }
 
+/* Announcement box (matching supervisor dashboard look) */
+.announcement-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin: 20px 0 28px;
+    box-shadow: 0 10px 30px rgba(13,71,161,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+.announcement-left {
+    display:flex;
+    gap:14px;
+    align-items:flex-start;
+}
+.announcement-icon {
+    width:46px;
+    height:46px;
+    border-radius:10px;
+    background: linear-gradient(135deg,#eaf3ff,#dbeeff);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#0d47a1;
+    font-size:1.25rem;
+    box-shadow: 0 6px 18px rgba(13,71,161,0.06);
+}
+.announcement-content h5 {
+    margin:0;
+    font-weight:700;
+    color:#0d47a1;
+    font-size:1.05rem;
+}
+.announcement-content p {
+    margin:6px 0 0;
+    color:#6c757d;
+}
+
+/* date to the right */
+.announcement-date {
+    color:#6c757d;
+    font-size:0.95rem;
+    white-space:nowrap;
+}
+
 /* NEW: tabs */
 .tab-links { display:inline-flex; gap:10px; justify-content:center; width:100%; margin: 10px 0 20px; }
 .tab-link {
@@ -155,7 +202,6 @@ body {
 }
 .btn-cancel:hover i { transform: rotate(-10deg) scale(1.2); }
 
-/* archive button */
 .btn-archive {
     background: linear-gradient(135deg, #0d47a1, #1e88e5);
     border: none;
@@ -175,7 +221,6 @@ body {
     transform: translateY(-2px) scale(1.03);
 }
 
-/* subtle style for archived cards in the Archived section */
 .booking-card.archived { background-color: #eef2f7; }
 
 .no-bookings {
@@ -199,7 +244,25 @@ body {
         <p>Manage all your car wash appointments efficiently.</p>
     </div>
 
-    <!-- NEW: Tabs -->
+    {# --- Announcement box: visible to all users, editable by supervisors in their dashboard --- #}
+    {% if announcement %}
+    <div class="announcement-card">
+        <div class="announcement-left">
+            <div class="announcement-icon">
+                <i class="bi bi-megaphone-fill"></i>
+            </div>
+            <div class="announcement-content">
+                <h5>What's New</h5>
+                <p>{{ announcement.message }}</p>
+            </div>
+        </div>
+        <div class="announcement-date">
+            {{ announcement.created_at|date:"M d, Y H:i" }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Tabs -->
     <div class="tab-links">
       <a href="#active" class="tab-link tab-active"><i class="bi bi-list-ul me-1"></i> Active</a>
       <a href="#archived" class="tab-link"><i class="bi bi-archive me-1"></i> Archived</a>
@@ -223,7 +286,20 @@ body {
                 <span class="booking-package">{{ booking.package.name }}</span>
                 <div class="booking-info">
                     <span><i class="bi bi-calendar3"></i> {{ booking.date|date:"M d, Y" }}</span>
-                    <span><i class="bi bi-clock"></i> {{ booking.time|time:"g:i a" }}</span>
+
+                    {# UPDATED: show time_slot if present, otherwise fallback to booking.time #}
+                    <span><i class="bi bi-clock"></i>
+                        {% if booking.time_slot %}
+                            {{ booking.time_slot.start_time|time:"g:i a" }} - {{ booking.time_slot.end_time|time:"g:i a" }}
+                        {% else %}
+                            {% if booking.time %}
+                                {{ booking.time|time:"g:i a" }}
+                            {% else %}
+                                <span class="text-muted">Time not set</span>
+                            {% endif %}
+                        {% endif %}
+                    </span>
+
                     <span><i class="bi bi-geo-alt"></i> {{ booking.address }}</span>
                 </div>
             </div>
@@ -296,7 +372,16 @@ body {
               <span class="booking-package">{{ booking.package.name }}</span>
               <div class="booking-info">
                 <span><i class="bi bi-calendar3"></i> {{ booking.date|date:"M d, Y" }}</span>
-                <span><i class="bi bi-clock"></i> {{ booking.time|time:"g:i a" }}</span>
+
+                {# UPDATED: archived list also shows slot time when available #}
+                <span><i class="bi bi-clock"></i>
+                    {% if booking.time_slot %}
+                        {{ booking.time_slot.start_time|time:"g:i a" }} - {{ booking.time_slot.end_time|time:"g:i a" }}
+                    {% else %}
+                        {{ booking.time|time:"g:i a" }}
+                    {% endif %}
+                </span>
+
                 <span><i class="bi bi-geo-alt"></i> {{ booking.address }}</span>
               </div>
             </div>
